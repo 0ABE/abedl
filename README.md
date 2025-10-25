@@ -1,6 +1,8 @@
 # ABEDL - Abe's Extensible Downloader
 
-A Python script for downloading videos from various platforms, starting with YouTube support.
+A Python script for downloading videos from various platforms, including:
+- YouTube
+- CBN (Flying House)
 
 ## Benefits
 
@@ -29,9 +31,11 @@ A Python script for downloading videos from various platforms, starting with You
 
 - Download individual YouTube videos
 - Download YouTube playlists
+- Download CBN videos (including Flying House episodes)
 - Extensible architecture for adding new video platforms
 - Command-line interface with multiple options
 - Quality selection and format options
+- Netflix-style naming for episode downloads
 
 ## Installation
 
@@ -147,6 +151,20 @@ deactivate
 python main.py download "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
+### Download CBN Flying House episodes
+```bash
+# Download a specific Flying House episode
+python main.py download "https://cbn.com/video/flying-house-episode-1"
+
+# Download multiple episodes
+python main.py download "https://cbn.com/video/flying-house-episode-2"
+python main.py download "https://cbn.com/video/flying-house-episode-3"
+```
+
+**Note**: CBN videos are automatically saved with Netflix-style naming conventions:
+- Format: `Flying House - E01 - Episode Title.mp4`
+- Example: `Flying House - E01 - Blast Off For The Past.mp4`
+
 ### Download a playlist
 ```bash
 python main.py download "https://www.youtube.com/playlist?list=PLAYLIST_ID"
@@ -165,6 +183,13 @@ python main.py download "https://www.youtube.com/watch?v=VIDEO_ID" --quality bes
 ### List available formats
 ```bash
 python main.py formats "https://www.youtube.com/watch?v=VIDEO_ID"
+python main.py formats "https://cbn.com/video/flying-house-episode-1"
+```
+
+### Get video information
+```bash
+python main.py info "https://www.youtube.com/watch?v=VIDEO_ID"
+python main.py info "https://cbn.com/video/flying-house-episode-1"
 ```
 
 ## Architecture
