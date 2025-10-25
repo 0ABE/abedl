@@ -47,8 +47,9 @@ class CBNDownloader(BaseDownloader):
     
     def _setup_ydl_opts(self) -> None:
         """Setup yt-dlp options based on download options"""
+        # Use a custom output template that will be overridden in download_video
         self.ydl_opts = {
-            'outtmpl': os.path.join(self.options.output_dir, '%(title)s.%(ext)s'),
+            'outtmpl': os.path.join(self.options.output_dir, 'temp_%(id)s.%(ext)s'),
             'format': self._get_format_string(),
             'writeinfojson': self.options.write_info_json,
             'writethumbnail': self.options.write_thumbnail,
@@ -104,6 +105,71 @@ class CBNDownloader(BaseDownloader):
         """Check if this downloader can handle CBN URLs"""
         return any(re.match(pattern, url, re.IGNORECASE) for pattern in self.CBN_PATTERNS)
     
+    def _parse_episode_info(self, url: str, title: str, description: str = None) -> tuple[str, str, str]:
+        """
+        Parse episode information from URL, title, and description to create Netflix-style naming.
+        Returns: (series_name, episode_number, episode_title)
+        """
+        series_name = "CBN Video"
+        episode_number = ""
+        episode_title = title
+        
+        # Use description as episode title if available and meaningful
+        if description and description.strip() and len(description.strip()) > 3:
+            # Use description instead of title for cleaner episode names
+            episode_title = description.strip()
+        
+        # Check if it's a Flying House episode
+        if "flying-house-episode-" in url:
+            series_name = "Flying House"
+            # Extract episode number from URL
+            episode_match = re.search(r'flying-house-episode-(\d+)', url)
+            if episode_match:
+                ep_num = int(episode_match.group(1))
+                episode_number = f"E{ep_num:02d}"  # Format as E01, E02, etc.
+        
+        # Try to extract episode number from title if not found in URL
+        if not episode_number:
+            title_episode_match = re.search(r'episode\s*(\d+)', title, re.IGNORECASE)
+            if title_episode_match:
+                ep_num = int(title_episode_match.group(1))
+                episode_number = f"E{ep_num:02d}"
+        
+        # Clean the episode title by removing redundant series/episode info
+        clean_title = re.sub(r'flying\s*house\s*-?\s*', '', episode_title, flags=re.IGNORECASE)
+        clean_title = re.sub(r'episode\s*\d+\s*-?\s*', '', clean_title, flags=re.IGNORECASE)
+        clean_title = clean_title.strip(' -')
+        
+        # If clean_title is empty after cleaning, use the original title or description
+        if not clean_title:
+            clean_title = episode_title
+        
+        return series_name, episode_number, clean_title
+    
+    def _create_netflix_filename(self, url: str, title: str, ext: str, description: str = None) -> str:
+        """
+        Create a Netflix-style filename: 'Series Name - S01E01 - Episode Title.ext'
+        For single episodes without season info: 'Series Name - E01 - Episode Title.ext'
+        """
+        series_name, episode_number, episode_title = self._parse_episode_info(url, title, description)
+        
+        # Sanitize components for filename safety
+        safe_series = re.sub(r'[^\w\-_\. ]', '', series_name)
+        safe_title = re.sub(r'[^\w\-_\. ]', '', episode_title)
+        
+        if episode_number:
+            # Netflix format: Series Name - E01 - Episode Title
+            filename = f"{safe_series} - {episode_number} - {safe_title}.{ext}"
+        else:
+            # Fallback for non-episode content
+            filename = f"{safe_series} - {safe_title}.{ext}"
+        
+        # Clean up any double spaces or dashes
+        filename = re.sub(r'\s+', ' ', filename)
+        filename = re.sub(r'-\s*-', '-', filename)
+        
+        return filename
+    
     def get_video_info(self, url: str) -> VideoInfo:
         """Extract video information using yt-dlp"""
         try:
@@ -137,30 +203,48 @@ class CBNDownloader(BaseDownloader):
             raise DownloadError(f"Failed to extract CBN playlist info: {str(e)}")
     
     def download_video(self, url: str) -> str:
-        """Download a single CBN video"""
+        """Download a single CBN video with Netflix-style naming"""
         try:
-            with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-                # Extract info to get the title for the filename
+            # First, extract info to get the title, description, and other metadata
+            info_opts = {'quiet': True}
+            with yt_dlp.YoutubeDL(info_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
-                title = info.get('title', 'cbn_video')
+                title = info.get('title', 'CBN Video')
+                description = info.get('description', '')
+                ext = info.get('ext', 'mp4')
                 
-                # Sanitize title for filename
-                safe_title = re.sub(r'[^\w\-_\. ]', '', title)
+                # Create Netflix-style filename using title and description
+                netflix_filename = self._create_netflix_filename(url, title, ext, description)
+                final_path = os.path.join(self.options.output_dir, netflix_filename)
+                
+                # Update output template to use our custom filename
+                download_opts = self.ydl_opts.copy()
+                download_opts['outtmpl'] = final_path
+                
+                # Handle audio-only downloads
+                if self.options.audio_only:
+                    if self.options.audio_format:
+                        ext = self.options.audio_format
+                        # Update filename with correct audio extension
+                        netflix_filename = self._create_netflix_filename(url, title, ext, description)
+                        final_path = os.path.join(self.options.output_dir, netflix_filename)
+                        download_opts['outtmpl'] = final_path
+                    else:
+                        # Let yt-dlp determine the best audio format
+                        # Update filename to remove video extension
+                        base_name = netflix_filename.rsplit('.', 1)[0]
+                        download_opts['outtmpl'] = os.path.join(self.options.output_dir, f"{base_name}.%(ext)s")
+                
+                print(f"Downloading: {title}")
+                if description and len(description.strip()) > 3:
+                    print(f"Description: {description[:50]}{'...' if len(description) > 50 else ''}")
+                print(f"Saving as: {os.path.basename(final_path)}")
                 
                 # Download the video
-                ydl.download([url])
+                with yt_dlp.YoutubeDL(download_opts) as download_ydl:
+                    download_ydl.download([url])
                 
-                # Determine the downloaded file path
-                ext = info.get('ext', 'mp4')
-                if self.options.audio_only and self.options.audio_format:
-                    ext = self.options.audio_format
-                elif self.options.audio_only:
-                    # yt-dlp will determine the best audio format
-                    ext = 'webm'  # Common audio format from yt-dlp
-                
-                output_path = os.path.join(self.options.output_dir, f"{safe_title}.{ext}")
-                
-                return output_path
+                return final_path
                 
         except Exception as e:
             raise DownloadError(f"Failed to download CBN video: {str(e)}")
