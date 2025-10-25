@@ -96,6 +96,11 @@ class DownloaderRegistry:
                     'https://www.youtube.com/playlist?list=PLAYLIST_ID',
                     'https://youtu.be/VIDEO_ID'
                 ]
+            elif name.lower() == 'cbn':
+                platforms[name] = [
+                    'https://cbn.com/video/flying-house-episode-1',
+                    'https://cbn.com/video/flying-house-episode-number',
+                ]
             else:
                 platforms[name] = ['Platform-specific URLs']
         
@@ -139,6 +144,12 @@ def _register_builtin_downloaders():
         register_downloader('youtube', YouTubeDownloader)
     except ImportError:
         print("Warning: YouTube downloader not available (yt-dlp not installed)")
+    
+    try:
+        from .cbn import CBNDownloader
+        register_downloader('cbn', CBNDownloader)
+    except ImportError:
+        print("Warning: CBN downloader not available (yt-dlp not installed)")
 
 
 # Auto-register built-in downloaders when module is imported

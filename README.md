@@ -100,8 +100,37 @@ source activate.sh
 ```
 
 #### Windows
+After initial setup, activate the environment before using ABEDL:
+
+**Command Prompt:**
 ```cmd
-venv\Scripts\activate
+# Navigate to the project directory
+cd C:\path\to\abedl
+
+# Activate the virtual environment
+venv\bin\activate
+
+# You should see (venv) in your command prompt
+# Now you can run ABEDL commands
+python main.py download "VIDEO_URL"
+```
+
+**PowerShell:**
+```powershell
+# Navigate to the project directory
+cd C:\path\to\abedl
+
+# Activate the virtual environment
+venv\bin\Activate.ps1
+
+# You should see (venv) in your PowerShell prompt
+# Now you can run ABEDL commands
+python main.py download "VIDEO_URL"
+```
+
+**Note for PowerShell users**: If you get an execution policy error, you may need to run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 #### To deactivate the virtual environment
