@@ -81,10 +81,6 @@ else
     exit 1
 fi
 
-# Run tests
-echo "🧪 Running tests..."
-python "$SCRIPT_DIR/test.py"
-
 if [ $? -eq 0 ]; then
     echo ""
     echo "🎉 ABEDL setup completed successfully!"

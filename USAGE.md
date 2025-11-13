@@ -4,6 +4,7 @@ This document shows examples of how to use ABEDL for various video download scen
 
 ## Table of Contents
 - [Basic Downloads](#basic-downloads)
+- [Keys for Kids Devotional Downloads](#keys-for-kids-devotional-downloads)
 - [Audio Downloads](#audio-downloads-requires-ffmpeg)
 - [Bot Detection and Cookie Authentication](#bot-detection-and-cookie-authentication)
 - [Format Conversion](#format-conversion-requires-ffmpeg)
@@ -27,6 +28,115 @@ python main.py download "https://www.youtube.com/watch?v=VIDEO_ID"
 ```bash
 python main.py download "https://www.youtube.com/watch?v=VIDEO_ID" --quality 720p
 ```
+
+## Keys for Kids Devotional Downloads
+
+ABEDL supports downloading daily devotional audio files from Keys for Kids (keysforkids.org).
+
+### Quick Command Reference
+```bash
+# Download today's devotional
+python main.py keysforkids
+
+# Download specific date
+python main.py keysforkids --date 2025-11-09
+
+# Download last 7 days
+python main.py keysforkids --last-days 7
+
+# Download date range
+python main.py keysforkids --start-date 2025-11-07 --end-date 2025-11-09
+```
+
+### Download today's devotional
+```bash
+python main.py keysforkids
+```
+
+### Download specific devotional by URL
+```bash
+python main.py download "https://www.keysforkids.org/podcast/keys-for-kids/forgive-us-our-diets-2/"
+```
+
+### Download to custom directory
+```bash
+python main.py download "https://www.keysforkids.org/devotional/" --output-dir ~/Music/Devotionals
+```
+
+### Download by date (easy CLI commands)
+```bash
+# Download today's devotional
+python main.py keysforkids
+
+# Download devotional from a specific date
+python main.py keysforkids --date 2025-11-09
+
+# Download devotionals from last 7 days
+python main.py keysforkids --last-days 7
+
+# Download devotionals for a date range
+python main.py keysforkids --start-date 2025-11-07 --end-date 2025-11-09
+
+# Download to a custom directory
+python main.py keysforkids --date 2025-11-09 --output-dir ~/Music/Devotionals
+```
+
+### Advanced: Python API for date-based downloads
+```bash
+# Download devotional from a specific date using Python directly
+python -c "
+from abedl.keysforkids import KeysForKidsDownloader
+from datetime import datetime
+
+# Download devotional from November 9, 2025
+date = datetime(2025, 11, 9)
+KeysForKidsDownloader.download_by_date(date)
+"
+
+# Download devotionals for a date range using Python directly
+python -c "
+from abedl.keysforkids import KeysForKidsDownloader
+from datetime import datetime
+
+# Download devotionals from Nov 7-9, 2025
+start = datetime(2025, 11, 7)
+end = datetime(2025, 11, 9)
+KeysForKidsDownloader.download_date_range(start, end)
+"
+
+# Get devotional URL for a specific date
+python -c "
+from abedl.keysforkids import KeysForKidsDownloader
+from datetime import datetime
+
+date = datetime(2025, 11, 9)
+url = KeysForKidsDownloader.get_devotional_url_by_date(date)
+print(url)
+"
+```
+
+### Get devotional information without downloading
+```bash
+python main.py info "https://www.keysforkids.org/podcast/keys-for-kids/forgive-us-our-diets-2/"
+```
+
+**Output format**: Files are automatically named with the date and title:
+```
+November 10, 2025_Forgive_Us_Our_Diets.mp3
+```
+
+**Supported URL formats**:
+- Today's devotional: `https://www.keysforkids.org/devotional/`
+- Specific devotional: `https://www.keysforkids.org/podcast/keys-for-kids/{devotional-title}/`
+- Archive pages: `https://www.keysforkids.org/podcast/default/{devotional-title}/`
+
+**Audio format**: MP3 files are downloaded directly from the Keys for Kids CDN (typically 3-4 MB per devotional).
+
+**Metadata extracted**:
+- Title of the devotional
+- Publication date
+- Bible verse reference
+- Devotional content
 
 ## Audio Downloads (requires ffmpeg)
 

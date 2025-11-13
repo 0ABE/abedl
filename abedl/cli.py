@@ -197,6 +197,103 @@ def formats(url: str):
 
 
 @cli.command()
+@click.option('--date', '-d', default=None,
+              help='Download devotional from specific date (YYYY-MM-DD)')
+@click.option('--start-date', default=None,
+              help='Start date for date range (YYYY-MM-DD)')
+@click.option('--end-date', default=None,
+              help='End date for date range (YYYY-MM-DD)')
+@click.option('--last-days', '-n', type=int, default=None,
+              help='Download devotionals from last N days')
+@click.option('--output-dir', '-o', default='./downloads',
+              help='Output directory for downloaded files')
+def keysforkids(date: str, start_date: str, end_date: str, last_days: int, output_dir: str):
+    """Download Keys for Kids devotionals by date
+    
+    \b
+    Examples:
+      python main.py keysforkids
+      python main.py keysforkids --date 2025-11-09
+      python main.py keysforkids --start-date 2025-11-07 --end-date 2025-11-09
+      python main.py keysforkids --last-days 7
+    """
+    from datetime import datetime, timedelta
+    from .keysforkids import KeysForKidsDownloader
+    
+    try:
+        # Determine what to download
+        if date:
+            # Single date
+            target_date = datetime.strptime(date, '%Y-%m-%d')
+            click.echo(f"📖 Downloading Keys for Kids devotional from {date}")
+            file_path = KeysForKidsDownloader.download_by_date(target_date, output_dir)
+            
+            if file_path:
+                click.echo(f"\n✓ Successfully downloaded: {file_path}")
+            else:
+                click.echo(f"\n❌ No devotional found for {date}")
+                sys.exit(1)
+                
+        elif start_date and end_date:
+            # Date range
+            start = datetime.strptime(start_date, '%Y-%m-%d')
+            end = datetime.strptime(end_date, '%Y-%m-%d')
+            
+            if start > end:
+                click.echo(f"❌ Start date must be before or equal to end date", err=True)
+                sys.exit(1)
+            
+            days = (end - start).days + 1
+            click.echo(f"📖 Downloading Keys for Kids devotionals from {start_date} to {end_date} ({days} days)")
+            
+            files = KeysForKidsDownloader.download_date_range(start, end, output_dir)
+            
+            if files:
+                click.echo(f"\n✓ Successfully downloaded {len(files)} devotional(s):")
+                for f in files:
+                    click.echo(f"  • {f}")
+            else:
+                click.echo(f"\n⚠️  No devotionals found for the specified date range")
+                sys.exit(1)
+                
+        elif last_days:
+            # Last N days
+            end = datetime.now()
+            start = end - timedelta(days=last_days - 1)
+            
+            click.echo(f"📖 Downloading Keys for Kids devotionals from last {last_days} days")
+            click.echo(f"   ({start.strftime('%Y-%m-%d')} to {end.strftime('%Y-%m-%d')})")
+            
+            files = KeysForKidsDownloader.download_date_range(start, end, output_dir)
+            
+            if files:
+                click.echo(f"\n✓ Successfully downloaded {len(files)} devotional(s):")
+                for f in files:
+                    click.echo(f"  • {f}")
+            else:
+                click.echo(f"\n⚠️  No devotionals found")
+                sys.exit(1)
+        else:
+            # No date specified - download today's devotional
+            today = datetime.now()
+            click.echo(f"📖 Downloading today's Keys for Kids devotional ({today.strftime('%Y-%m-%d')})")
+            file_path = KeysForKidsDownloader.download_by_date(today, output_dir)
+            
+            if file_path:
+                click.echo(f"\n✓ Successfully downloaded: {file_path}")
+            else:
+                click.echo(f"\n❌ No devotional found for today")
+                sys.exit(1)
+                
+    except ValueError as e:
+        click.echo(f"❌ Invalid date format. Use YYYY-MM-DD (e.g., 2025-11-09)", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"❌ Error downloading devotional: {e}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
 def platforms():
     """List supported platforms and example URLs"""
     

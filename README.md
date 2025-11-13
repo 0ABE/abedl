@@ -75,7 +75,8 @@ choco install ffmpeg
    ```
 4. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip3 install -r requirements.txt
+   # or simply: pip install -r requirements.txt
    ```
 
 ### Virtual Environment Activation
@@ -93,6 +94,8 @@ source venv/bin/activate
 # Now you can run ABEDL commands
 python main.py download "VIDEO_URL"
 ```
+
+**Important for macOS**: Always use `python3` (not `python`) even after activating the virtual environment. This is because macOS doesn't provide a `python` command in the PATH by default.
 
 #### Using the activation script (shortcut)
 ```bash
@@ -153,6 +156,33 @@ To add support for a new video platform:
 See the YouTube downloader implementation for reference.
 
 ## Troubleshooting
+
+### Virtual environment broken after Homebrew Python update
+**Symptoms**: `python: command not found` or `zsh: no matches found: venv/bin/python*`
+
+**Cause**: When Homebrew updates Python (e.g., 3.13 → 3.14), it removes the old Python version, breaking existing virtual environments that were linked to it.
+
+**Solution**: Recreate the virtual environment:
+```bash
+# Remove the old broken venv
+rm -rf venv
+
+# Run setup again to create a new venv with the current Python
+./setup.sh
+```
+
+This is normal and happens whenever Homebrew updates Python to a new minor version.
+
+### "python: command not found" after activating venv
+**Solution**: Make sure the virtual environment is properly activated:
+```bash
+source venv/bin/activate
+# You should see (venv) in your prompt
+```
+
+If the venv was created successfully, both `python` and `python3` will work after activation.
+
+**If still broken**: The venv may be linked to an old Python version - see "Virtual environment broken" above.
 
 ### list-formats errors
 If you encounter errors related to format listing:
