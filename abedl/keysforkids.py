@@ -208,6 +208,9 @@ class KeysForKidsDownloader(BaseDownloader):
         """
         Get the devotional URL for a specific date.
         
+        Uses a smart search algorithm that estimates which page to check based on
+        how old the date is, then searches nearby pages.
+        
         Args:
             date: Date to search for
             max_pages: Maximum number of archive pages to search (default: 324)
@@ -216,6 +219,37 @@ class KeysForKidsDownloader(BaseDownloader):
             URL to the devotional page, or None if not found
         """
         date_pattern = date.strftime('%B %-d, %Y')
+        
+        def check_page(page_num: int) -> Optional[str]:
+            """Helper function to check a specific page for the date."""
+            if page_num == 1:
+                archive_url = 'https://www.keysforkids.org/podcasts/keys-for-kids/'
+            else:
+                archive_url = f'https://www.keysforkids.org/podcasts/keys-for-kids/page/{page_num}/'
+            
+            try:
+                response = requests.get(archive_url, timeout=10)
+                response.raise_for_status()
+                
+                # Look for the date in the HTML
+                idx = response.text.find(date_pattern)
+                
+                if idx != -1:
+                    # Found the date on this page
+                    context = response.text[idx:idx+1000]
+                    
+                    # Find the first devotional URL after the date
+                    url_match = re.search(
+                        r'href="(https://www\.keysforkids\.org/podcast/(?:keys-for-kids|default)/[^/"]+/)"',
+                        context
+                    )
+                    
+                    if url_match:
+                        return url_match.group(1)
+            except Exception:
+                pass
+            
+            return None
         
         try:
             # First try the date search
@@ -237,31 +271,41 @@ class KeysForKidsDownloader(BaseDownloader):
                 if url_match:
                     return url_match.group(1)
             
-            # If date search didn't work, try paginated archive pages
-            for page in range(1, max_pages + 1):
-                if page == 1:
-                    archive_url = 'https://www.keysforkids.org/podcasts/keys-for-kids/'
-                else:
-                    archive_url = f'https://www.keysforkids.org/podcasts/keys-for-kids/page/{page}/'
-                
-                response = requests.get(archive_url, timeout=10)
-                response.raise_for_status()
-                
-                # Look for the date in the HTML
-                idx = response.text.find(date_pattern)
-                
-                if idx != -1:
-                    # Found the date on this page
-                    context = response.text[idx:idx+1000]
-                    
-                    # Find the first devotional URL after the date
-                    url_match = re.search(
-                        r'href="(https://www\.keysforkids\.org/podcast/(?:keys-for-kids|default)/[^/"]+/)"',
-                        context
-                    )
-                    
-                    if url_match:
-                        return url_match.group(1)
+            # Estimate which page the date might be on
+            # Assume ~10 devotionals per page (7 days/week)
+            today = datetime.now()
+            days_ago = (today - date).days
+            
+            # Estimate page number (10 devotionals per page)
+            estimated_page = max(1, days_ago // 10)
+            
+            # Cap the estimated page at max_pages
+            estimated_page = min(estimated_page, max_pages)
+            
+            print(f"Date is ~{days_ago} days old, estimating page {estimated_page}")
+            
+            # Search strategy: check estimated page, then expand outward
+            # This finds the devotional faster for old dates
+            pages_to_check = [estimated_page]
+            
+            # Add nearby pages in expanding radius
+            for offset in range(1, 6):  # Check 5 pages on each side
+                if estimated_page - offset >= 1:
+                    pages_to_check.append(estimated_page - offset)
+                if estimated_page + offset <= max_pages:
+                    pages_to_check.append(estimated_page + offset)
+            
+            # Check each page in order
+            for page in pages_to_check:
+                result = check_page(page)
+                if result:
+                    return result
+            
+            # If still not found and we haven't checked page 1, check it
+            if 1 not in pages_to_check:
+                result = check_page(1)
+                if result:
+                    return result
             
             return None
         except Exception as e:
