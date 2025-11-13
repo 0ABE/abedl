@@ -3,6 +3,7 @@
 A Python script for downloading videos from various platforms, including:
 - YouTube
 - CBN (Flying House)
+- Keys for Kids
 
 ## Benefits
 
