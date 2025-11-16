@@ -25,8 +25,11 @@ from typing import List
 from .base import DownloadOptions, DownloadError
 from .registry import get_downloader_for_url, registry
 
+# Configure Click to use -h as help shortcut
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-@click.group()
+
+@click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(version='1.0.0', prog_name='ABEDL')
 def cli():
     """ABEDL - Abe's Extensible Downloader
