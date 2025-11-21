@@ -38,6 +38,7 @@ class YouTubeDownloader(BaseDownloader):
         r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=[\w-]+',
         r'(?:https?://)?(?:www\.)?youtube\.com/playlist\?list=[\w-]+',
         r'(?:https?://)?youtu\.be/[\w-]+',
+        r'(?:https?://)?(?:www\.)?youtube\.com/shorts/[\w-]+',
         r'(?:https?://)?(?:www\.)?youtube\.com/channel/[\w-]+',
         r'(?:https?://)?(?:www\.)?youtube\.com/@[\w-]+',
         r'(?:https?://)?(?:www\.)?youtube\.com/c/[\w-]+',
