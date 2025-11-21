@@ -81,18 +81,30 @@ else
     exit 1
 fi
 
+# Install package in editable mode
+echo "📦 Installing abedl package..."
+pip install -e "$SCRIPT_DIR"
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to install abedl package"
+    exit 1
+fi
+echo "✓ abedl package installed"
+
+# Check for successful installation
 if [ $? -eq 0 ]; then
     echo ""
     echo "🎉 ABEDL setup completed successfully!"
     echo ""
     echo "To use ABEDL:"
     echo "  1. Activate the environment: source activate.sh"
-    echo "  2. Run commands: python main.py --help"
+    echo "  2. Run commands: abedl --help"
     echo ""
     echo "Example usage:"
-    echo "  python main.py info 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'"
-    echo "  python main.py download 'https://www.youtube.com/watch?v=VIDEO_ID'"
+    echo "  abedl info 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'"
+    echo "  abedl download 'https://www.youtube.com/watch?v=VIDEO_ID'"
+    echo "  abedl keysforkids --last-days 7"
 else
-    echo "❌ Setup completed but tests failed. Please check the installation."
+    # Installation failed
+    echo "❌ Setup completed but installation failed."
     exit 1
 fi

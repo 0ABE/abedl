@@ -15,13 +15,31 @@
 # 
 
 # Activation script for ABEDL virtual environment
+# 
+# USAGE:
+#   source activate.sh    # Correct - activates in current shell
+#   . activate.sh         # Also correct - same as source
+#   ./activate.sh         # WRONG - runs in subshell, activation lost
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Detect if script is being sourced or executed
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo "❌ ERROR: This script must be sourced, not executed!"
+    echo ""
+    echo "Run it like this:"
+    echo "  source activate.sh"
+    echo "  or"
+    echo "  . activate.sh"
+    echo ""
+    echo "Do NOT run it like: ./activate.sh"
+    exit 1
+fi
 
 # Check if virtual environment exists
 if [ ! -d "$SCRIPT_DIR/venv" ]; then
     echo "❌ Virtual environment not found. Please run setup.sh first."
-    exit 1
+    return 1
 fi
 
 # Activate virtual environment
@@ -29,9 +47,10 @@ source "$SCRIPT_DIR/venv/bin/activate"
 
 echo "✓ ABEDL virtual environment activated"
 echo "Available commands:"
-echo "  python main.py --help     # Show help"
-echo "  python main.py platforms  # List supported platforms"
-echo "  python main.py info URL   # Get video/playlist info"
-echo "  python main.py download URL # Download video/playlist"
+echo "  abedl --help          # Show help"
+echo "  abedl platforms       # List supported platforms"
+echo "  abedl info URL        # Get video/playlist info"
+echo "  abedl download URL    # Download video/playlist"
+echo "  abedl keysforkids     # Download Keys for Kids devotionals"
 echo ""
 echo "To deactivate: deactivate"
