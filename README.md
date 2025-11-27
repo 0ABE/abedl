@@ -63,11 +63,21 @@ choco install ffmpeg
 ```
 
 ### Quick Setup (Recommended)
+
+**macOS/Linux:**
 1. Clone this repository
 2. Install ffmpeg (see above)
 3. Run the setup script:
    ```bash
    ./setup.sh
+   ```
+
+**Windows:**
+1. Clone this repository
+2. Install ffmpeg (see above)
+3. Run the setup script:
+   ```cmd
+   setup.bat
    ```
 
 ### Manual Setup
@@ -76,7 +86,7 @@ choco install ffmpeg
 3. Create a virtual environment:
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\bin\activate
    ```
 4. Install dependencies:
    ```bash
@@ -97,7 +107,7 @@ source venv/bin/activate
 
 # You should see (venv) in your terminal prompt
 # Now you can run ABEDL commands
-python main.py download "VIDEO_URL"
+abedl download "VIDEO_URL"
 ```
 
 **Important for macOS**: Always use `python3` (not `python`) even after activating the virtual environment. This is because macOS doesn't provide a `python` command in the PATH by default.
@@ -110,30 +120,30 @@ source activate.sh
 #### Windows
 After initial setup, activate the environment before using ABEDL:
 
-**Command Prompt:**
-```cmd
-# Navigate to the project directory
-cd C:\path\to\abedl
-
-# Activate the virtual environment
-venv\bin\activate
-
-# You should see (venv) in your command prompt
-# Now you can run ABEDL commands
-python main.py download "VIDEO_URL"
-```
-
-**PowerShell:**
+**PowerShell (Recommended):**
 ```powershell
 # Navigate to the project directory
 cd C:\path\to\abedl
 
 # Activate the virtual environment
-venv\bin\Activate.ps1
+.\venv\bin\Activate.ps1
 
 # You should see (venv) in your PowerShell prompt
 # Now you can run ABEDL commands
-python main.py download "VIDEO_URL"
+abedl download "VIDEO_URL"
+```
+
+**Git Bash:**
+```bash
+# Navigate to the project directory
+cd /c/path/to/abedl
+
+# Activate the virtual environment
+source venv/bin/activate
+
+# You should see (venv) in your prompt
+# Now you can run ABEDL commands
+abedl download "VIDEO_URL"
 ```
 
 **Note for PowerShell users**: If you get an execution policy error, you may need to run:
@@ -152,17 +162,17 @@ deactivate
 
 ### Download a single video
 ```bash
-python main.py download "https://www.youtube.com/watch?v=VIDEO_ID"
+abedl download "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
 ### Download CBN Flying House episodes
 ```bash
 # Download a specific Flying House episode
-python main.py download "https://cbn.com/video/flying-house-episode-1"
+abedl download "https://cbn.com/video/flying-house-episode-1"
 
 # Download multiple episodes
-python main.py download "https://cbn.com/video/flying-house-episode-2"
-python main.py download "https://cbn.com/video/flying-house-episode-3"
+abedl download "https://cbn.com/video/flying-house-episode-2"
+abedl download "https://cbn.com/video/flying-house-episode-3"
 ```
 
 **Note**: CBN videos are automatically saved with Netflix-style naming conventions:
@@ -171,29 +181,29 @@ python main.py download "https://cbn.com/video/flying-house-episode-3"
 
 ### Download a playlist
 ```bash
-python main.py download "https://www.youtube.com/playlist?list=PLAYLIST_ID"
+abedl download "https://www.youtube.com/playlist?list=PLAYLIST_ID"
 ```
 
 ### Specify output directory
 ```bash
-python main.py download "https://www.youtube.com/watch?v=VIDEO_ID" --output-dir /path/to/downloads
+abedl download "https://www.youtube.com/watch?v=VIDEO_ID" --output-dir /path/to/downloads
 ```
 
 ### Select video quality
 ```bash
-python main.py download "https://www.youtube.com/watch?v=VIDEO_ID" --quality best
+abedl download "https://www.youtube.com/watch?v=VIDEO_ID" --quality best
 ```
 
 ### List available formats
 ```bash
-python main.py formats "https://www.youtube.com/watch?v=VIDEO_ID"
-python main.py formats "https://cbn.com/video/flying-house-episode-1"
+abedl formats "https://www.youtube.com/watch?v=VIDEO_ID"
+abedl formats "https://cbn.com/video/flying-house-episode-1"
 ```
 
 ### Get video information
 ```bash
-python main.py info "https://www.youtube.com/watch?v=VIDEO_ID"
-python main.py info "https://cbn.com/video/flying-house-episode-1"
+abedl info "https://www.youtube.com/watch?v=VIDEO_ID"
+abedl info "https://cbn.com/video/flying-house-episode-1"
 ```
 
 ## Architecture
